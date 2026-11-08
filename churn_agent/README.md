@@ -26,7 +26,7 @@ For a shareable link: push this folder to GitHub and deploy `app.py` on Streamli
 | `evaluation.py` | Ablation study, capacity curve, guardrail scoring, failure log |
 | `redteam.py` | Guardrail test sentences: development, held-out, normal |
 | `evaluate_guardrails.py` | Measures guardrails; `--llm` adds the AI reviewer (needs API key) |
-| `app.py` | CSM tool: fixed top bar with six views (Call list, Is 15 enough?, Why they leave, False alarms, Testing, All merchants), a Data pack button for uploads, and Help |
+| `app.py` | CSM tool. Opens on **Home** (what needs doing, with four choices: My actions, Big picture, Look up a merchant, Upload new data). Top bar: Home, My actions, Big picture (Is 15 enough? / Why they leave / False alarms), All merchants, Testing, plus Upload data and Help |
 | `.streamlit/config.toml` | Razorpay colour theme |
 
 ## How outreach differs by merchant size
@@ -37,7 +37,7 @@ For a shareable link: push this folder to GitHub and deploy `app.py` on Streamli
 | Small | Call or email, as the merchant prefers | CSM (Account Manager for pricing) |
 | Over the 15-call limit | Reviewed email asking for a reply | CSM; Account Manager follows up first if renewal is within 30 days |
 
-The Call list has two lanes, Calls (15) and Emails (9). Every message is guardrail-checked and needs CSM approval.
+My actions has two lanes, Calls (15) and Emails (9). Every message is guardrail-checked and needs CSM approval.
 "Download hand-off sheet" exports all 24 with channel, who is involved, status, the CSM's note and the approved text.
 
 ## Who decides what
@@ -55,7 +55,7 @@ The Call list has two lanes, Calls (15) and Emails (9). Every message is guardra
 - Under +/-30% random weight changes (500 runs) no decoy ever becomes High; 13 of 15 picks hold in 90%+ of runs.
 
 ## Using a different data pack
-In the app: the **Data pack** button in the top bar. The file must have a P2_Merchants sheet with the same columns;
+In the app: **Upload data** (top bar or the Home card). The page lists what the file needs and offers the original as a template; after loading, the app returns to Home with the new month's summary. The file must have a P2_Merchants sheet with the same columns;
 P2_Playbooks and P2_Assumptions are read if present (falling back to the original's, with a visible note).
 Assumptions (net revenue %, cost per call, call cap, months of value, seasonal industries) are read from the
 file's text. A banner shows which pack and assumptions are in use; "Back to original" restores the default.

@@ -1,8 +1,8 @@
 """
 Merchant Retention Agent - CSM workspace.   Run:  python -m streamlit run app.py
 
-Built as a tool, not a page: a fixed top bar switches between six views, each view
-does one job, and long explanations sit behind click-to-open panels. Every message is
+Built as a tool, not a page: it opens on Home (what needs doing, where to go), and a fixed
+top bar switches between five views plus Upload; each view does one job, and long explanations sit behind click-to-open panels. Every message is
 re-checked by the guardrails when edited; nothing is sent automatically.
 """
 import hashlib
@@ -104,6 +104,17 @@ header[data-testid="stHeader"] {{ display: none; }}
 .card .l {{ color: {MUTED}; font-size: 0.86rem; }}
 .card .fix {{ margin-top: 10px; font-size: 0.88rem; line-height: 1.45; padding-top: 10px; border-top: 1px solid {LINE}; }}
 .small {{ color: {MUTED}; font-size: 0.85rem; }}
+.hello .title {{ margin-bottom: 2px; }}
+.steps {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 6px 0 18px; }}
+.steps div {{ background: {TINT}; border-radius: 12px; padding: 10px 14px; font-size: 0.9rem; line-height: 1.4; }}
+.steps b {{ display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: {NAVY}; color: #fff !important;
+  text-align: center; line-height: 22px; font-size: 0.8rem; margin-right: 6px; }}
+[class*="st-key-hcard_"] {{ background: #fff; border: 1px solid {LINE}; border-radius: 18px; padding: 18px 20px 16px;
+  margin-bottom: 14px; min-height: 228px; }}
+.st-key-hcard_actions {{ border: 2px solid {BLUE} !important; background: {TINT2} !important; }}
+.hk {{ color: {MUTED}; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }}
+.hv {{ font-family: 'TASA Orbiter','Inter',sans-serif; font-size: 1.6rem; font-weight: 800; color: {NAVY}; margin: 4px 0 2px; }}
+.hd {{ color: {INK}; font-size: 0.93rem; line-height: 1.45; margin: 8px 0 10px; min-height: 42px; }}
 
 .stButton button {{ border-radius: 999px; font-weight: 600; }}
 .stButton button[kind="primary"] *, .stDownloadButton button[kind="primary"] * {{ color: #fff !important; }}
@@ -118,6 +129,7 @@ header[data-testid="stHeader"] {{ display: none; }}
 
 @media (max-width: 900px) {{
   .tiles, .cards, .cards.three, .kfacts {{ grid-template-columns: 1fr 1fr; }}
+  .steps {{ grid-template-columns: 1fr; }}
   .block-container {{ padding-top: 150px !important; }}
 }}
 </style>
@@ -185,6 +197,8 @@ def on_upload():
     reset_workspace()
     st.session_state.data_path, st.session_state.data_name = tmp, up.name
     st.session_state.upload_error = None
+    st.session_state.just_loaded = up.name
+    st.session_state.view_saved, st.session_state.view_w = "Home", "Home"
 
 
 def reset_workspace():
@@ -196,6 +210,8 @@ def reset_workspace():
 
 def back_to_original():
     reset_workspace()
+    st.session_state.just_loaded = "original"
+    st.session_state.view_saved, st.session_state.view_w = "Home", "Home"
     st.session_state.data_path, st.session_state.data_name = BUNDLED, "data_pack.xlsx (original)"
     st.session_state.upload_error = None
 
@@ -350,7 +366,7 @@ pbk = playbooks.set_index("playbook_id")
 n_eligible = int(p0.eligible.sum())
 ss.setdefault("decisions", {}); ss.setdefault("notes", {})
 ss.setdefault("lane", "call"); ss.setdefault("pick_call", 0); ss.setdefault("pick_email", 0)
-ss.setdefault("cap_saved", OUTREACH_CAP); ss.setdefault("save_saved", 25); ss.setdefault("view_saved", "Call list")
+ss.setdefault("cap_saved", OUTREACH_CAP); ss.setdefault("save_saved", 25); ss.setdefault("view_saved", "Home")
 cap = int(min(ss.cap_saved, n_eligible))
 save_rate = ss.save_saved / 100
 p = E.prioritise(p0, cap=cap)
@@ -363,11 +379,20 @@ hi = p[p.risk_label == "High"]
 dec = p[p.classification.str.startswith("Decoy")]
 covered = call.annual_value_inr.sum()
 
-# ---------------------------------------------------------------- fixed top bar
+# ---------------------------------------------------------------- navigation
 PLAN = f"Is {OUTREACH_CAP} enough?"
-VIEWS = {"Call list": ":material/call:", PLAN: ":material/tune:", "Why they leave": ":material/insights:",
-         "False alarms": ":material/notifications_off:", "Testing": ":material/fact_check:",
-         "All merchants": ":material/table_rows:"}
+VIEWS = {"Home": ":material/home:", "My actions": ":material/checklist:", "Big picture": ":material/insights:",
+         "All merchants": ":material/table_rows:", "Testing": ":material/fact_check:"}
+PAGES = list(VIEWS) + ["Upload data"]                 # Upload has its own button, not a pill
+BIG = [PLAN, "Why they leave", "False alarms"]        # the three parts of the big picture
+
+
+def go(v, sub=None):
+    """Jump to a view from any button (runs as a callback, before widgets are drawn)."""
+    ss.view_saved = v
+    ss.view_w = v if v in VIEWS else None
+    if sub:
+        ss.bp_saved = sub
 
 
 def _keep_view():
@@ -375,23 +400,21 @@ def _keep_view():
         ss.view_saved = ss.view_w
 
 
-if ss.view_saved not in VIEWS:          # e.g. the old "Plan" name, or a new pack with a different cap
-    ss.view_saved = "Call list"
+ss.setdefault("bp_saved", PLAN)
+if ss.view_saved not in PAGES:          # old names ("Call list", "Plan"), or a first visit
+    ss.view_saved = "Home"
+if ss.bp_saved not in BIG:
+    ss.bp_saved = PLAN
 
 with st.container(key="topbar"):
-    b1, b2, b3, b4 = st.columns([0.95, 4.6, 0.8, 0.62], vertical_alignment="center")
+    b1, b2, b3, b4 = st.columns([0.95, 4.2, 0.95, 0.62], vertical_alignment="center")
     b1.markdown('<div class="rp brand"><span class="mark"></span>Retention Agent</div>', unsafe_allow_html=True)
-    b2.segmented_control("View", list(VIEWS), default=ss.view_saved, key="view_w", on_change=_keep_view,
+    b2.segmented_control("View", list(VIEWS), default=ss.view_saved if ss.view_saved in VIEWS else None,
+                         key="view_w", on_change=_keep_view,
                          format_func=lambda v: f"{VIEWS[v]} {v}", label_visibility="collapsed")
-    with b3.popover("Data pack", icon=":material/upload_file:", width="stretch"):
-        st.markdown(f"**In use:** {ss.data_name}  \n{len(p0)} merchants, {A['cap']} calls a month, "
-                    f"₹{A['false_alarm_cost']:,} per call")
-        st.file_uploader("Upload a new data pack (.xlsx)", type="xlsx", key="uploader", on_change=on_upload,
-                         help="Needs a P2_Merchants sheet with the same columns as the original. "
-                              "P2_Playbooks and P2_Assumptions are read if present.")
-        st.caption("Everything recalculates for the new file. Your approvals start fresh.")
-        if not is_original:
-            st.button("Back to the original data pack", on_click=back_to_original, icon=":material/undo:")
+    b3.button("Upload data", icon=":material/upload_file:", on_click=go, args=("Upload data",), width="stretch",
+              key="top_upload",
+              type="primary" if ss.view_saved == "Upload data" else "secondary")
     with b4.popover("Help", icon=":material/help:"):
         st.markdown(
             "**Monthly payments**: money a merchant collects through Razorpay each month (₹ lakh).  \n"
@@ -401,13 +424,13 @@ with st.container(key="topbar"):
             f"**Cost of a call**: about ₹{FALSE_ALARM_COST:,} of CSM time.")
         st.divider()
         st.markdown(
-            f"**Call list**: your work for the month: {OUTREACH_CAP} calls, plus a reviewed email for every other "
-            "at-risk merchant.  \n"
-            f"**{PLAN}**: what the call limit protects, and what it costs.  \n"
-            "**Why they leave**: the causes, and the fix that would stop them next month.  \n"
-            "**False alarms**: merchants that look risky but aren't, and why.  \n"
-            "**Testing**: how it was checked, including what fails.  \n"
-            "**All merchants**: all merchants, ranked, with the reason for each.")
+            "**Home**: start here: what needs doing and where to go.  \n"
+            f"**My actions**: this month's {OUTREACH_CAP} calls and the emails for everyone else at risk. "
+            "Review, approve, download.  \n"
+            "**Big picture**: is the call limit enough, why merchants leave, and the false alarms we skipped.  \n"
+            "**All merchants**: look up any merchant and see why it is or isn't on the list.  \n"
+            "**Testing**: how the agent was checked, including what fails.  \n"
+            "**Upload data**: run the agent on a new month's data pack.")
 view = ss.view_saved
 if ss.get("upload_error"):
     st.error(f"That file wasn't loaded. {ss.upload_error} The previous data pack is still in use.",
@@ -441,8 +464,103 @@ def handoff_sheet():
     return pd.DataFrame(rows)
 
 
-# ================================================================ CALL LIST
-if view == "Call list" and len(work) == 0:
+# ================================================================ BIG PICTURE (three parts, one view)
+if view == "Big picture":
+    st.segmented_control("Part", BIG, default=ss.bp_saved, key=f"bp_w_{ss.bp_saved}",
+                         on_change=lambda: ss.update(bp_saved=ss[f"bp_w_{ss.bp_saved}"] or ss.bp_saved),
+                         label_visibility="collapsed")
+    view = ss.bp_saved
+
+# ================================================================ HOME
+if view == "Home":
+    n_rev = sum(m in done for m in work.merchant_id)
+    todo = [w for w in work.itertuples() if w.merchant_id not in done]
+    at_risk = hi.annual_value_inr.sum()
+    if ss.pop("just_loaded", None):
+        st.success(f"Loaded {ss.data_name}. Everything below is recalculated for this file.", icon=":material/task_alt:")
+    st.markdown(f'<div class="rp hello"><div class="title disp">'
+                + (f"{len(work)} merchants need you this month" if len(work) else "No merchant needs you this month")
+                + f'</div><p class="dmeta">Checked {len(p)} merchants from {ss.data_name}. '
+                f'{len(dec)} looked risky but aren\'t, so they\'re left alone.</p></div>', unsafe_allow_html=True)
+    if len(work):
+        st.markdown(
+            '<div class="rp steps">'
+            f'<div><b>1</b> Open <i>My actions</i>: {len(call)} calls{f" and {len(over)} emails" if len(over) else ""}, biggest first</div>'
+            '<div><b>2</b> For each merchant, read the why, edit the message, approve or skip</div>'
+            '<div><b>3</b> Download the hand-off sheet and share it with your team</div></div>',
+            unsafe_allow_html=True)
+
+    h1, h2 = st.columns(2, gap="medium")
+    with h1:
+        with st.container(key="hcard_actions"):
+            nxt = f"Next up: <b>{todo[0].business_name}</b> ({todo[0].reason_plain.lower()})" if todo else \
+                  ("Everything reviewed. Download the hand-off sheet." if len(work) else "Nothing to do this month.")
+            st.markdown(f'<div class="rp"><div class="hk">My actions</div>'
+                        f'<div class="hv">{n_rev} of {len(work)} reviewed</div>'
+                        f'<div class="meter"><i style="width:{n_rev/max(len(work),1)*100:.0f}%"></i></div>'
+                        f'<p class="hd">{nxt}</p></div>', unsafe_allow_html=True)
+            st.button("Start reviewing" if n_rev == 0 else "Continue reviewing", type="primary",
+                      icon=":material/arrow_forward:", on_click=go, args=("My actions",), width="stretch",
+                      disabled=not len(work))
+        with st.container(key="hcard_lookup"):
+            st.markdown('<div class="rp"><div class="hk">Look up a merchant</div>'
+                        f'<div class="hv">{len(p)} merchants</div>'
+                        '<p class="hd">A manager asks "why isn\'t X on the list?" Find any merchant and the '
+                        'one-sentence reason.</p></div>', unsafe_allow_html=True)
+            st.button("Open all merchants", icon=":material/search:", on_click=go, args=("All merchants",),
+                      width="stretch")
+    with h2:
+        with st.container(key="hcard_big"):
+            if len(hi):
+                top = hi.groupby("primary_driver").annual_value_inr.sum().idxmax()
+                share = covered / max(at_risk, 1)
+                st.markdown(f'<div class="rp"><div class="hk">The big picture</div>'
+                            f'<div class="hv">₹{at_risk/1e5:.1f} L a year at risk</div>'
+                            f'<p class="hd">{len(call)} calls protect {share:.0%} of it. The biggest cause is '
+                            f'<b>{DRIVER[top][0].lower()}</b>.</p></div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="rp"><div class="hk">The big picture</div><div class="hv">Nothing at risk</div>'
+                            '<p class="hd">No merchant shows two or more warning signs.</p></div>', unsafe_allow_html=True)
+            c1, c2, c3 = st.columns(3)
+            c1.button(PLAN, on_click=go, args=("Big picture", PLAN), width="stretch")
+            c2.button("Why they leave", on_click=go, args=("Big picture", "Why they leave"), width="stretch")
+            c3.button("False alarms", on_click=go, args=("Big picture", "False alarms"), width="stretch")
+        with st.container(key="hcard_upload"):
+            st.markdown(f'<div class="rp"><div class="hk">Upload new data</div>'
+                        f'<div class="hv">{"Original data pack" if is_original else ss.data_name}</div>'
+                        '<p class="hd">New month? Upload the latest data pack and the agent re-runs on it.</p></div>',
+                        unsafe_allow_html=True)
+            st.button("Upload data", icon=":material/upload_file:", on_click=go, args=("Upload data",), width="stretch",
+                      key="home_upload")
+    st.markdown('<p class="small">Want to know how far to trust it? See <b>Testing</b> in the top bar: '
+                'what was checked, and what still fails.</p>', unsafe_allow_html=True)
+
+# ================================================================ UPLOAD
+elif view == "Upload data":
+    title("Upload new data")
+    u1, u2 = st.columns([1.35, 1], gap="large")
+    with u1:
+        st.markdown(f"**Now using:** {ss.data_name}  \n{len(p0)} merchants · {n_eligible} at risk · "
+                    f"{A['cap']} calls a month · ₹{A['false_alarm_cost']:,} per call")
+        st.file_uploader("Choose this month's data pack (.xlsx)", type="xlsx", key="uploader", on_change=on_upload)
+        st.caption("The agent re-runs on the new file straight away and takes you back to Home. "
+                   "Approvals and notes from the old file are cleared, so download your hand-off sheet first.")
+        if not is_original:
+            st.button("Back to the original data pack", on_click=back_to_original, icon=":material/undo:")
+    with u2:
+        st.markdown("**What the file needs**")
+        st.markdown("- A sheet called **P2_Merchants**, one row per merchant, same columns as the original\n"
+                    "- Optional: **P2_Playbooks** and **P2_Assumptions** (otherwise the original ones are used, "
+                    "and you'll see a note)\n"
+                    "- Six months of payments, oldest (m1) to newest (m6), all above zero")
+        with open(BUNDLED, "rb") as fh:
+            st.download_button("Download the original as a template", fh.read(), "data_pack_template.xlsx",
+                               icon=":material/download:")
+        with st.expander("All required columns"):
+            st.markdown(", ".join(f"`{c}`" for c in E.REQUIRED_COLUMNS))
+
+# ================================================================ MY ACTIONS
+elif view == "My actions" and len(work) == 0:
     title("No merchant needs a call this month")
     st.markdown(tiles([("0 calls", "to make this month", ""), (f"{len(p)}", "merchants checked", ""),
                        (f"{len(dec)}", "false alarms skipped", ""), (f"{int((p.risk_label == 'Low').sum())}", "low risk", "")]),
@@ -450,7 +568,7 @@ if view == "Call list" and len(work) == 0:
     st.info("No merchant shows two or more warning signs together. Check again next month, or open "
             "All merchants to see the full list.", icon=":material/task_alt:")
 
-elif view == "Call list":
+elif view == "My actions":
     email_txt = f" + {len(over)} emails" if len(over) else ""
     st.markdown(tiles([
         (f"{len(call)} calls{email_txt}", "every at-risk merchant gets contacted", ""),
@@ -758,7 +876,7 @@ elif view == "Testing":
         st.dataframe(gr_rows, hide_index=True, width="stretch")
 
 # ================================================================ ALL MERCHANTS
-else:
+elif view == "All merchants":
     title("All merchants")
     f1, f2, f3 = st.columns([1, 1, 2])
     lab = f1.segmented_control("Risk", ["High", "Low"], default=["High", "Low"], selection_mode="multi", key="f_risk")
