@@ -1,0 +1,53 @@
+test_id,type,case,expected,engine_output,result
+C2001,Real row: at-risk,"Small, Beauty & Wellness","High, driver = Performance","High (99), Performance, PB-1",PASS
+C2015,Real row: at-risk,"Small, Fitness & Sports","High, driver = Performance","High (79), Performance, PB-1",PASS
+C2034,Real row: at-risk,"Small, Fitness & Sports","High, driver = Performance","High (79), Performance, PB-1",PASS
+C2045,Real row: at-risk,"Small, Travel & Hospitality","High, driver = Performance","High (96), Performance, PB-1",PASS
+C2061,Real row: at-risk,"Mid, Health & Pharmacy","High, driver = Performance","High (91), Performance, PB-1",PASS
+C2088,Real row: at-risk,"Enterprise, Electronics","High, driver = Performance","High (83), Performance, PB-1",PASS
+C2100,Real row: at-risk,"Mid, Books & Stationery","High, driver = Performance","High (82), Performance, PB-1",PASS
+C2027,Real row: at-risk,"Mid, Home & Furniture","High, driver = Service","High (59), Service, PB-2",PASS
+C2062,Real row: at-risk,"Mid, Fitness & Sports","High, driver = Service","High (69), Service, PB-2",PASS
+C2079,Real row: at-risk,"Mid, Grocery & Food","High, driver = Service","High (56), Service, PB-2",PASS
+C2084,Real row: at-risk,"Mid, Beauty & Wellness","High, driver = Service","High (78), Service, PB-2",PASS
+C2091,Real row: at-risk,"Small, Electronics","High, driver = Service","High (73), Service, PB-2",PASS
+C2093,Real row: at-risk,"Mid, Health & Pharmacy","High, driver = Service","High (64), Service, PB-2",PASS
+C2004,Real row: at-risk,"Enterprise, Health & Pharmacy","High, driver = Pricing / competitive","High (57), Pricing / competitive, PB-3",PASS
+C2018,Real row: at-risk,"Mid, Beauty & Wellness","High, driver = Pricing / competitive","High (58), Pricing / competitive, PB-3",PASS
+C2022,Real row: at-risk,"Small, Electronics","High, driver = Pricing / competitive","High (57), Pricing / competitive, PB-3",PASS
+C2036,Real row: at-risk,"Small, Beauty & Wellness","High, driver = Pricing / competitive","High (54), Pricing / competitive, PB-3",PASS
+C2040,Real row: at-risk,"Small, Health & Pharmacy","High, driver = Pricing / competitive","High (49), Pricing / competitive, PB-3",PASS
+C2092,Real row: at-risk,"Small, Grocery & Food","High, driver = Pricing / competitive","High (52), Pricing / competitive, PB-3",PASS
+C2008,Real row: at-risk,"Small, Fitness & Sports","High, driver = Disengagement","High (66), Disengagement, PB-4",PASS
+C2020,Real row: at-risk,"Small, Apparel & Fashion","High, driver = Disengagement","High (71), Disengagement, PB-4",PASS
+C2032,Real row: at-risk,"Small, Gifting & Festive","High, driver = Disengagement","High (66), Disengagement, PB-4",PASS
+C2090,Real row: at-risk,"Mid, Education / Coaching","High, driver = Disengagement","High (66), Disengagement, PB-4",PASS
+C2097,Real row: at-risk,"Mid, Apparel & Fashion","High, driver = Disengagement","High (51), Disengagement, PB-4",PASS
+C2012,Real row: decoy (seasonal),"Small, Education / Coaching","Low, not contacted","Low (2), Decoy: seasonal, PB-6",PASS
+C2023,Real row: decoy (seasonal),"Small, Travel & Hospitality","Low, not contacted","Low (4), Decoy: seasonal, PB-6",PASS
+C2048,Real row: decoy (seasonal),"Mid, Travel & Hospitality","Low, not contacted","Low (2), Decoy: seasonal, PB-6",PASS
+C2054,Real row: decoy (seasonal),"Small, Gifting & Festive","Low, not contacted","Low (2), Decoy: seasonal, PB-6",PASS
+C2065,Real row: decoy (seasonal),"Enterprise, Gifting & Festive","Low, not contacted","Low (2), Decoy: seasonal, PB-6",PASS
+C2066,Real row: decoy (seasonal),"Mid, Education / Coaching","Low, not contacted","Low (5), Decoy: seasonal, PB-6",PASS
+C2067,Real row: decoy (seasonal),"Small, Education / Coaching","Low, not contacted","Low (2), Decoy: seasonal, PB-6",PASS
+C2094,Real row: decoy (seasonal),"Mid, Gifting & Festive","Low, not contacted","Low (5), Decoy: seasonal, PB-6",PASS
+C2003,Real row: decoy (busy but healthy),"Mid, SaaS / Digital Services","Low, not contacted","Low (0), Decoy: busy but healthy, PB-5",PASS
+C2016,Real row: decoy (busy but healthy),"Small, Books & Stationery","Low, not contacted","Low (3), Decoy: busy but healthy, PB-5",PASS
+C2043,Real row: decoy (busy but healthy),"Small, Gifting & Festive","Low, not contacted","Low (3), Decoy: busy but healthy, PB-5",PASS
+C2072,Real row: decoy (busy but healthy),"Small, Books & Stationery","Low, not contacted","Low (0), Decoy: busy but healthy, PB-5",PASS
+C2078,Real row: decoy (busy but healthy),"Small, Fitness & Sports","Low, not contacted","Low (0), Decoy: busy but healthy, PB-5",PASS
+C2083,Real row: decoy (busy but healthy),"Small, SaaS / Digital Services","Low, not contacted","Low (0), Decoy: busy but healthy, PB-5",PASS
+C2002,Real row: decoy (low-volume stable),"Small, SaaS / Digital Services","Low, not contacted","Low (3), Decoy: low-volume stable, PB-6",PASS
+C2014,Real row: decoy (low-volume stable),"Small, Books & Stationery","Low, not contacted","Low (0), Decoy: low-volume stable, PB-6",PASS
+C2017,Real row: decoy (low-volume stable),"Small, Books & Stationery","Low, not contacted","Low (2), Decoy: low-volume stable, PB-6",PASS
+C2025,Real row: decoy (low-volume stable),"Small, Education / Coaching","Low, not contacted","Low (0), Decoy: low-volume stable, PB-6",PASS
+C2042,Real row: decoy (low-volume stable),"Small, Travel & Hospitality","Low, not contacted","Low (0), Decoy: low-volume stable, PB-6",PASS
+C2050,Real row: decoy (low-volume stable),"Small, Grocery & Food","Low, not contacted","Low (2), Decoy: low-volume stable, PB-6",PASS
+E1,Synthetic edge case,"Seasonal industry but steady decline, no rebound",Not Low (must NOT be excused as seasonal),"Medium (35), PB-4, rank 28",PASS
+E2,Synthetic edge case,"AM note claims seasonal, but data shows steady decline",Not Low (data beats note),"Medium (35), PB-4, rank 29",PASS
+E3,Synthetic edge case,"12 tickets in 90 days, all resolved, TPV growing","Low, PB-5","Low (0), PB-5, rank 106",PASS
+E4,Synthetic edge case,"Tiny stable merchant, 1 login, 1 product, no CSAT","Low, PB-6","Low (0), PB-6, rank 107",PASS
+E5,Synthetic edge case,Success rate down 10 pts but TPV still growing,Not Low,"Medium (30), PB-1, rank 30",PASS
+E6,Synthetic edge case,"Huge healthy enterprise (Rs 900L/month), no risk",Not in top 15,"Low (0), PB-6, rank 108",PASS
+E7,Synthetic edge case,"Early churner: TPV down 10%, no note, all else healthy",Not Low (KNOWN BLIND SPOT),"Low (12), PB-6, rank 37",FAIL
+E8,Synthetic edge case,"5 unresolved tickets, CSAT missing, TPV stable",Not Low (KNOWN BLIND SPOT),"Low (15), PB-6, rank 34",FAIL

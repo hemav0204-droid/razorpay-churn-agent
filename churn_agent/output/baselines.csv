@@ -1,0 +1,6 @@
+approach,merchants,decoys_included,at_risk_included,annual_value_covered_inr,note
+This agent (risk gate + value x urgency),15.0,0.0,15.0,8407200.0,Final selection
+Rank by risk score only,15.0,0.0,15.0,3990000.0,"Same precision, but skips big accounts for tiny ones"
+Rank by TPV drop only (top 15),15.0,0.0,15.0,4263600.0,"No decoys at 15, but drivers unknown"
+Rank by TPV drop only (top 20),20.0,4.0,16.0,5544000.0,Seasonal decoys start entering at 16+
+Excuse all seasonal-industry merchants,,,,,"Would wrongly excuse 3 at-risk merchants: C2032, C2045, C2090"
